@@ -154,7 +154,7 @@ if __name__ == "__main__":
         delay_seconds = 0
 
         # Se si vogliono visualizzare in 3D (interattivi).
-        graphs_3D = True
+        graphs_3D = False
         colormap = cm.plasma
 
         # Cambio coordinate necessario per la visualizzazione.
