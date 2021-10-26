@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from icecream import ic
 
 pi, e = math.pi, math.e
 

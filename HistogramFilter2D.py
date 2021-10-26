@@ -3,7 +3,9 @@
 from models import *
 from data import *
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from timeit import default_timer as timer
 
 
@@ -21,9 +23,16 @@ def dtype_precision(value):
 
 
 if __name__ == "__main__":
-    # ----------------------------------------- INITIALIZATION ----------------------------------------------#
+    # -------------------------- INIZIALIZZAZIONE ---------------------------------- #
 
-    length_x, length_y = 50, 50  # dimensioni spazio
+    # Si potrebbe cambiare renderer per problemi di compatibilità o di performance.
+    # Per usare 'Qt5Agg' bisogna avere installato il pacchetto 'pyqt5';
+    # per usare 'WebAgg' (visualizzazione nel browser) serve il pacchetto 'tornado'.
+    default_renderer = matplotlib.get_backend()
+    # {(default_renderer) | 'Qt5Agg' | 'WebAgg' | 'TkAgg' | etc..}
+    matplotlib.use(default_renderer)
+
+    length_x, length_y = 20, 20  # dimensioni spazio
 
     delta_x, delta_y = .5, .5  # per una discretizzazione rettangolare.
 
@@ -42,9 +51,9 @@ if __name__ == "__main__":
     for i in range(bel_size_y):
         grid_centers_y.append(delta_y / 2 + i * delta_y)
 
-    # -------------------------------------------------------------------------------------------------------#
+    # -----------------------------------------------------------------------------------------------#
 
-    # ----------------------------------------- FUNCTIONS ---------------------------------------------------#7
+    # ----------------------------------------- FUNZIONI --------------------------------------------#
 
     # Inizializzo la bel posterior con una distibuzione uniforme
     posterior_bel_x, posterior_bel_y = np.full(bel_size_x, 1/bel_size_x, dtype=dtype_precision(precision)), np.full(
@@ -135,54 +144,101 @@ if __name__ == "__main__":
 
         # ---------------------------- GRAFICI ------------------------------------- #
 
+        # Purtroppo questa sezione è un pò un casino. Il codice è un po' bruttino
+        # e spaghettificato. Però funziona! E le giornate hanno solo 24 ore.
+
         # Tanto ci mette un po' per fare i calcoli; posso
         # decidere se mandare i plot avanti in automatico.
-        autograph = True
+        # Funziona solo per i grafici 2D.
+        autograph = False
         delay_seconds = 0
 
-        # Interpolazione dei punti plottati, per grafici più smooth.
-        # Ad esempio: 'none', 'antialiased', 'gaussian', 'lanczos', etc.
-        ip = 'none'
+        # Se si vogliono visualizzare in 3D (interattivi).
+        graphs_3D = True
+        colormap = cm.plasma
 
-        if iteration == 0 and autograph:
-            plt.ion()  # Modalità interattiva
-            fig, axs = plt.subplots(2, 2, figsize=(10, 10),
-                                    constrained_layout=True)
+        # Cambio coordinate necessario per la visualizzazione.
+        X, Y = np.meshgrid(grid_centers_x, grid_centers_y)
 
-        if not autograph:
-            fig, axs = plt.subplots(2, 2, figsize=(10, 10),
-                                    constrained_layout=True)
+        if graphs_3D:
+            fig, axs = plt.subplots(2, 2, figsize=(
+                10, 10), constrained_layout=True, subplot_kw={'projection': '3d'})
+
+            axes_image_00 = axs[0, 0].plot_surface(X, Y, posterior_2D_previous,
+                                                   cmap=colormap, linewidth=0, antialiased=True)
+            fig.colorbar(axes_image_00, ax=axs[0, 0])
+            axs[0, 0].set_title(f'Posterior Belief, t={iteration}')
+
+            axes_image_01 = axs[0, 1].plot_surface(
+                X, Y, prior_2D, cmap=colormap, linewidth=0, antialiased=True)
+            fig.colorbar(axes_image_00, ax=axs[0, 1])
+            axs[0, 1].set_title(f'Prior Belief, t={iteration+1}')
+
+            axes_image_10 = axs[1, 0].plot_surface(
+                X, Y, likelihood_2D, cmap=colormap, linewidth=0, antialiased=True)
+            fig.colorbar(axes_image_00, ax=axs[1, 0])
+            axs[1, 0].set_title(f'Likelihood, t={iteration+1}')
+
+            axes_image_11 = axs[1, 1].plot_surface(
+                X, Y, posterior_2D, cmap=colormap, linewidth=0, antialiased=True)
+            fig.colorbar(axes_image_00, ax=axs[1, 1])
+            axs[1, 1].set_title(f'Posterior Belief, t={iteration+1}')
+
+            for i in range(4):
+                axs.flat[i].set_xlabel('x value')
+                axs.flat[i].set_ylabel('y value')
+
+            plt.show()
+
+        else:  # ----- 2D PLOTS -----
+
+            if iteration == 0 and autograph:
+                plt.ion()  # Modalità interattiva
+                fig, axs = plt.subplots(2, 2, figsize=(10, 10),
+                                        constrained_layout=True)
+
+            if not autograph:
+                fig, axs = plt.subplots(2, 2, figsize=(10, 10),
+                                        constrained_layout=True)
 
             # ---------- Posterior Belief al timestamp (t-1):
-        axes_image_00 = axs[0, 0].matshow(
-            posterior_2D_previous.astype('float64'), interpolation=ip)
-        axs[0, 0].set_title(f'Posterior Belief, t={iteration}')
+            axes_image_00 = axs[0, 0].pcolormesh(X, Y,
+                                                 posterior_2D_previous.astype('float64'), shading='auto')
+            axs[0, 0].set_title(f'Posterior Belief, t={iteration}')
 
-        # ---------- Prior Belief al timestamp (t):
-        axes_image_01 = axs[0, 1].matshow(
-            prior_2D.astype('float64'), interpolation=ip)
-        axs[0, 1].set_title(f'Prior Belief, t={iteration+1}')
+            # ---------- Prior Belief al timestamp (t):
+            axes_image_01 = axs[0, 1].pcolormesh(X, Y,
+                                                 prior_2D.astype('float64'), shading='auto')
+            axs[0, 1].set_title(f'Prior Belief, t={iteration+1}')
 
-        # ---------- Likelihood al timestamp (t):
-        axes_image_10 = axs[1, 0].matshow(
-            likelihood_2D.astype('float64'), interpolation=ip)
-        axs[1, 0].set_title(f'Likelihood, t={iteration+1}')
+            # ---------- Likelihood al timestamp (t):
+            axes_image_10 = axs[1, 0].pcolormesh(X, Y,
+                                                 likelihood_2D.astype('float64'), shading='auto')
+            axs[1, 0].set_title(f'Likelihood, t={iteration+1}')
 
-        # ---------- Posterior Belief al timestamp (t):
-        axes_image_11 = axs[1, 1].matshow(
-            posterior_2D.astype('float64'), interpolation=ip)
-        axs[1, 1].set_title(f'Posterior Belief, t={iteration+1}')
+            # ---------- Posterior Belief al timestamp (t):
+            axes_image_11 = axs[1, 1].pcolormesh(X, Y,
+                                                 posterior_2D.astype('float64'), shading='auto')
+            axs[1, 1].set_title(f'Posterior Belief, t={iteration+1}')
 
-        if iteration == 0 or not autograph:
-            fig.colorbar(axes_image_00, ax=axs[0, 0])
-            fig.colorbar(axes_image_01, ax=axs[0, 1])
-            fig.colorbar(axes_image_10, ax=axs[1, 0])
-            fig.colorbar(axes_image_11, ax=axs[1, 1])
+            for i in range(4):
+                axs.flat[i].set_xlabel('x value')
+                axs.flat[i].set_ylabel('y value')
 
-        if autograph:
-            fig.canvas.draw()
-            fig.canvas.flush_events()
-            # Con un valore (0) si interrompe e basta.
-            plt.pause(delay_seconds + 0.0001)
-        else:
-            plt.show()
+            if iteration == 0 or not autograph:
+                fig.colorbar(axes_image_00, ax=axs[0, 0])
+                fig.colorbar(axes_image_01, ax=axs[0, 1])
+                fig.colorbar(axes_image_10, ax=axs[1, 0])
+                fig.colorbar(axes_image_11, ax=axs[1, 1])
+
+            if autograph:
+                fig.canvas.draw()
+                fig.canvas.flush_events()
+                # Con un valore (0) si interrompe e basta.
+                plt.pause(delay_seconds + 0.0001)
+            else:
+                plt.show()
+
+    # Mette in pausa l'esecuzione del programma prima di terminare.
+    # Utile per vedere i plot dell'ultima iterazione!
+    _ = input()
