@@ -4,13 +4,13 @@ import scipy.io
 # Posso decidere se caricare i file tramite (scipy.io) o direttamente
 # da una loro definizione letterale.
 
-folder = '2021_10_22'
+# folder = '2021_10_22'
 
-M = np.array(scipy.io.loadmat(folder+'/Dataset1_2D_Map.mat').get('Map'))
+# M = np.array(scipy.io.loadmat(folder+'/Dataset1_2D_Map.mat').get('Map'))
 
-U = np.array(scipy.io.loadmat(folder+'/Dataset1_2D_U.mat').get('U'))
+# U = np.array(scipy.io.loadmat(folder+'/Dataset1_2D_U.mat').get('U'))
 
-Z = np.array(scipy.io.loadmat(folder+'/Dataset1_2D_Z.mat').get('Z'))
+# Z = np.array(scipy.io.loadmat(folder+'/Dataset1_2D_Z.mat').get('Z'))
 
 M = np.array([[2, 2, 5],
               [2, 4, 4]])
