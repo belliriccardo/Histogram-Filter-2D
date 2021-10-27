@@ -32,9 +32,11 @@ if __name__ == "__main__":
     # {(default_renderer) | 'Qt5Agg' | 'WebAgg' | 'TkAgg' | etc..}
     matplotlib.use(default_renderer)
 
-    length_x, length_y = 20, 20  # dimensioni spazio
+    length_x, length_y = 10, 10  # Dimensione spazio
 
-    delta_x, delta_y = .5, .5  # per una discretizzazione rettangolare.
+    delta = 0.2  # Finezza discretizzazione
+
+    delta_x, delta_y = delta, delta  # Discretizzazione spazio.
 
     # Le pdf possono avere anche valori molto piccoli;
     # voglio poter decidere la precisione da utilizzare.
@@ -63,9 +65,8 @@ if __name__ == "__main__":
     var_v = 1  # VARIANZA MOTION MODEL
     var_mu = 1  # VARIANZA MEASUREMENT MODEL
 
-    # per quanto riguarda il numero delle iterazioni, questo potrebbe essere reso dipendente dal fatto che si hanno
-    # a disposizione un diverso numero di misure e un diverso numero di comandi. Quindi l'algoritmo si deve fermare
-    # quando uno dei due dati viene a mancare.
+    # Il numero di misure potrebbe essere diverso dal numero di comandi. L'algoritmo si
+    # fermera' quando uno dei due viene a mancare.
     iterations = min(len(Z[0]), len(U[0]))
 
     # ------------------------------- INIZIO CICLO --------------------------------- #
