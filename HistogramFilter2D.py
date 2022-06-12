@@ -151,7 +151,7 @@ if __name__ == "__main__":
         # Tanto ci mette un po' per fare i calcoli; posso
         # decidere se mandare i plot avanti in automatico.
         # Funziona solo per i grafici 2D.
-        autograph = False
+        autograph = True
         delay_seconds = 0
 
         # Se si vogliono visualizzare in 3D (interattivi).
